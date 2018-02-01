@@ -22,6 +22,7 @@
     const enable_douban = true;
     // 是否开启连续翻页
     const enable_pageless = true;
+    const pagebar_color = "#020089";
 
     const douban_apikey = "0b2bdeda43b5688921839c8ecb20399b";
 
@@ -284,7 +285,7 @@
         });
     }
 
-    GM_addStyle(".loadsepbar {background-color: #00897b; color: #ffffff; }");
+    GM_addStyle(".loadsepbar {background-color: " + pagebar_color + "; color: #ffffff; }");
 
     $(window).on("load", () => {
         let rows = $("table.torrents > tbody > tr");

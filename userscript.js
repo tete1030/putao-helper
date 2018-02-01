@@ -21,7 +21,7 @@
     // 是否开启豆瓣评分加载
     const enable_douban = true;
     // 是否开启连续翻页
-    const enable_pageless = false;
+    const enable_pageless = true;
 
     const douban_apikey = "0b2bdeda43b5688921839c8ecb20399b";
 
@@ -308,11 +308,7 @@
                 cont: '.torrents > tbody',
                 pagi: '.torrents ~ p:eq(0)'
             }, (cont) => {
-                let douban = false;
-                if(header.attr("douban") == "1") {
-                    douban = true;
-                }
-                let bar = $("<td colspan='" + (douban ? 10 : 9) + "' class='rowfollow'>正在加载···</td>");
+                let bar = $("<td colspan='" + (enable_douban ? 10 : 9) + "' class='rowfollow'>正在加载···</td>");
                 cont.append($("<tr class='loadsepbar'></tr>").append(bar));
                 return bar;
             });
@@ -321,15 +317,12 @@
                 let url = result.url;
                 let bar = result.start_callback_result;
                 let elems = result.elems;
-                let douban = false;
-                if(header.attr("douban") == "1") {
-                    douban = true;
-                }
+
                 let match = url.match(/[&\?]page=(\d+)&?/);
                 let page_num = "undefined";
                 if(match) page_num = (Number(match[1]) + 1).toString();
                 bar[0].innerText = "第" + page_num + "页";
-                if(douban) {
+                if(enable_douban) {
                     addRateCol(elems);
                     loadRate(elems);
                 }

@@ -4,7 +4,7 @@
 // @supportURL   http://github.com/tete1030/putao-helper
 // @homepageURL  http://github.com/tete1030/putao-helper
 // @namespace    http://github.com/tete1030
-// @version      1.03
+// @version      1.04
 // @description  展示豆瓣分数，连续页面加载
 // @author       Te Qi
 // @match        http*://pt.sjtu.edu.cn/*
@@ -17,6 +17,7 @@
 // @note         2018.02.02-V1.01  修复Safari浏览器支持
 // @note         2018.02.02-V1.02  修复表头错位
 // @note         2018.02.02-V1.03  支持“候选”栏；末页处理；修复bug
+// @note         2018.02.02-V1.04  修复末页bug
 // ==/UserScript==
 
 (function() {
@@ -87,20 +88,24 @@
         };
         waterfall.prototype.fetchURL= function(url) {
             mylog(`fetchUrl = ${url}`);
-            const fetchwithcookie = fetch(url, { credentials: 'same-origin' });
-            return fetchwithcookie
-                .then(response => response.text())
-                .then(html => new DOMParser().parseFromString(html, 'text/html'))
-                .then(doc => {
-                let $doc = $(doc);
-                let href = $doc.find(this.selector.next).attr('href');
-                let nextURL = href ? this.getNextURL(href) : undefined;
-                let elems = $doc.find(this.selector.item);
-                return {
-                    nextURL,
-                    elems
-                };
-            });
+            if(url) {
+                const fetchwithcookie = fetch(url, { credentials: 'same-origin' });
+                return fetchwithcookie
+                    .then(response => response.text())
+                    .then(html => new DOMParser().parseFromString(html, 'text/html'))
+                    .then(doc => {
+                    let $doc = $(doc);
+                    let href = $doc.find(this.selector.next).attr('href');
+                    let nextURL = href ? this.getNextURL(href) : undefined;
+                    let elems = $doc.find(this.selector.item);
+                    return {
+                        nextURL,
+                        elems
+                    };
+                });
+            } else {
+                return new Promise((resolve, reject) => {resolve({nextURL: undefined, elems: undefined});});
+            }
         };
         waterfall.prototype.fetchSync= function* (urli, start_callback, cont) {
             let url = urli;
@@ -324,8 +329,8 @@
                 let bar = result.start_callback_result;
                 let elems = result.elems;
 
-                let match = url.match(/[&\?]page=(\d+)&?/);
-                if(match) {
+                let match;
+                if(url && (match = url.match(/[&\?]page=(\d+)&?/))) {
                     let page_num = (Number(match[1]) + 1).toString();
                     bar[0].innerText = "第" + page_num + "页";
                 } else {

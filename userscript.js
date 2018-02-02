@@ -12,7 +12,9 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
 // @connect      api.douban.com
+// @run-at       document-start
 // @note         2018.02.01-V1.0
+// @note         2018.02.02-V1.01  修复Safari浏览器支持
 // ==/UserScript==
 
 (function() {

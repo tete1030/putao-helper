@@ -4,7 +4,7 @@
 // @supportURL   http://github.com/tete1030/putao-helper
 // @homepageURL  http://github.com/tete1030/putao-helper
 // @namespace    http://github.com/tete1030
-// @version      1.02
+// @version      1.03
 // @description  展示豆瓣分数，连续页面加载
 // @author       Te Qi
 // @match        http*://pt.sjtu.edu.cn/*
@@ -16,6 +16,7 @@
 // @note         2018.02.01-V1.0
 // @note         2018.02.02-V1.01  修复Safari浏览器支持
 // @note         2018.02.02-V1.02  修复表头错位
+// @note         2018.02.02-V1.03  支持“候选”栏；末页处理；修复bug
 // ==/UserScript==
 
 (function() {
@@ -60,7 +61,8 @@
                 pagi: '.pagination'
             };
             Object.assign(this.selector, selectorcfg);
-            this.nextURL = this.getNextURL($(this.selector.next).attr('href'));
+            let href = $(this.selector.next).attr('href');
+            this.nextURL = href ? this.getNextURL(href) : undefined;
             this.pagegen = this.fetchSync(this.nextURL, start_callback, this.selector.cont);
             this.anchor = $(this.selector.pagi)[0];
             this._count = 0;
@@ -240,7 +242,7 @@
             }
 
             let cat = $(e).children().eq(0).find("img")[0].attributes.alt.value;
-            let title_dom = $(e).children().eq(2).find("a[title]")[0];
+            let title_dom = $(e).children().eq(2).find("a")[0];
             mylog(title_dom);
 
             if(cat.match(/.+音乐|mp3合辑|游戏|软件|学习|mac|校园原创/)) {
@@ -248,10 +250,10 @@
                 return;
             }
 
-            let title = title_dom.attributes.title.value;
+            let title = title_dom.innerText;
             let match = title.match(/^\s*(?:\[.+\]\s*)*\[(.+)\]/);
             if(match != null) {
-                let main_title = match[1].replace(/\s*[第全]\s*(?:[0-9\-]+|[一二三四五六七八九十百\-]+)\s*集/g, "");
+                let main_title = match[1].replace(/\s*[第全]\s*(?:[0-9\-]+|[一二三四五六七八九十百\-]+)\s*[集期]/g, "");
                 mylog(main_title);
                 getJSON_GM('https://api.douban.com/v2/movie/search?count=1&apikey=' + douban_apikey + '&q=' + encodeURIComponent(main_title), function (data) {
                     if (data.code && data.code == 112) {
@@ -275,15 +277,15 @@
                         score_dom.innerText = average.toString();
                         numrater_dom.innerText = num_raters.toString();
 
-                        let pos = $(title_dom);
-                        while(pos.next().length > 0 && pos.next()[0].tagName == 'B') {
-                            pos = pos.next().eq(0);
+                        let pos = $(title_dom).siblings("br").last().prev();
+                        if(pos.length == 0) {
+                            pos = $(title_dom).parent().contents().last();
                         }
                         pos.after("<br><a style='color: #999999' target='_blank' href='https://movie.douban.com/subject/" + movieid + "'>" + title + " / " + year + "</a>");
                     });
                 });
             } else {
-                console.warning("No Match for", title);
+                console.warn("No Match for", title);
             }
         });
     }
@@ -323,14 +325,20 @@
                 let elems = result.elems;
 
                 let match = url.match(/[&\?]page=(\d+)&?/);
-                let page_num = "undefined";
-                if(match) page_num = (Number(match[1]) + 1).toString();
-                bar[0].innerText = "第" + page_num + "页";
-                if(enable_douban) {
-                    addRateCol(elems);
-                    loadRate(elems);
+                if(match) {
+                    let page_num = (Number(match[1]) + 1).toString();
+                    bar[0].innerText = "第" + page_num + "页";
+                } else {
+                    bar[0].innerText = "无下一页";
                 }
-                cont.append(elems);
+
+                if(elems && elems.length > 0) {
+                    if(enable_douban) {
+                        addRateCol(elems);
+                        loadRate(elems);
+                    }
+                    cont.append(elems);
+                }
             });
         }
     });

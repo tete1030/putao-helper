@@ -4,7 +4,7 @@
 // @supportURL   http://github.com/tete1030/putao-helper
 // @homepageURL  http://github.com/tete1030/putao-helper
 // @namespace    http://github.com/tete1030
-// @version      1.0
+// @version      1.01
 // @description  展示豆瓣分数，连续页面加载
 // @author       Te Qi
 // @match        http*://pt.sjtu.edu.cn/*

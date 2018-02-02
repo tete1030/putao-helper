@@ -4,7 +4,7 @@
 // @supportURL   http://github.com/tete1030/putao-helper
 // @homepageURL  http://github.com/tete1030/putao-helper
 // @namespace    http://github.com/tete1030
-// @version      1.01
+// @version      1.02
 // @description  展示豆瓣分数，连续页面加载
 // @author       Te Qi
 // @match        http*://pt.sjtu.edu.cn/*
@@ -15,6 +15,7 @@
 // @run-at       document-start
 // @note         2018.02.01-V1.0
 // @note         2018.02.02-V1.01  修复Safari浏览器支持
+// @note         2018.02.02-V1.02  修复表头错位
 // ==/UserScript==
 
 (function() {
@@ -295,7 +296,7 @@
         let body = rows.slice(1);
 
         if(enable_douban) {
-            if(header.attr("douban") == "1") {
+            if(header.attr("douban") != "1") {
                 let rate_header = $("<td id='rate_header' class='colhead'><nobr>分数</nobr></td>");
                 rate_header.insertAfter(header.children().eq(0));
                 header.attr("douban", "1");
